@@ -156,7 +156,13 @@ export default function Home() {
       recipes: recipesRef.current,
       details: detailsRef.current,
     }
-    sectionMap[section]?.scrollIntoView({ behavior: 'smooth' })
+    const target = sectionMap[section]
+    if (!target) {
+      return
+    }
+    const headerOffset = 96
+    const top = target.getBoundingClientRect().top + window.scrollY - headerOffset
+    window.scrollTo({ top, behavior: 'smooth' })
   }
 
   const handleSaveMeal = (meal: MealDetailsType) => {
