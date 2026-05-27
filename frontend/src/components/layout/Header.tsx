@@ -1,4 +1,8 @@
-export default function Header() {
+type HeaderProps = {
+  onNavigate?: (section: 'search' | 'categories' | 'recipes' | 'details') => void
+}
+
+export default function Header({ onNavigate }: HeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-white/70 bg-white/70 backdrop-blur">
       <div className="mx-auto flex w-full max-w-screen-xl items-center justify-between px-6 py-4">
@@ -12,18 +16,34 @@ export default function Header() {
           </div>
         </div>
         <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
-          <a className="transition hover:text-amber-700" href="#search">
+          <button
+            className="transition hover:text-amber-700"
+            onClick={() => onNavigate?.('search')}
+            type="button"
+          >
             Search
-          </a>
-          <a className="transition hover:text-amber-700" href="#categories">
+          </button>
+          <button
+            className="transition hover:text-amber-700"
+            onClick={() => onNavigate?.('categories')}
+            type="button"
+          >
             Categories
-          </a>
-          <a className="transition hover:text-amber-700" href="#recipes">
+          </button>
+          <button
+            className="transition hover:text-amber-700"
+            onClick={() => onNavigate?.('recipes')}
+            type="button"
+          >
             Recipes
-          </a>
-          <a className="transition hover:text-amber-700" href="#details">
+          </button>
+          <button
+            className="transition hover:text-amber-700"
+            onClick={() => onNavigate?.('details')}
+            type="button"
+          >
             Details
-          </a>
+          </button>
         </nav>
       </div>
     </header>

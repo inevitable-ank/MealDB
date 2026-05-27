@@ -26,6 +26,7 @@ export default function Home() {
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const searchRef = useRef<HTMLDivElement | null>(null)
   const categoriesRef = useRef<HTMLElement | null>(null)
   const recipesRef = useRef<HTMLElement | null>(null)
   const detailsRef = useRef<HTMLElement | null>(null)
@@ -90,6 +91,12 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!selectedMeal && randomMeal) {
       setSelectedMeal(randomMeal)
     }
@@ -142,6 +149,16 @@ export default function Home() {
     window.setTimeout(() => setToast(null), 2200)
   }
 
+  const handleNav = (section: 'search' | 'categories' | 'recipes' | 'details') => {
+    const sectionMap = {
+      search: searchRef.current,
+      categories: categoriesRef.current,
+      recipes: recipesRef.current,
+      details: detailsRef.current,
+    }
+    sectionMap[section]?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const handleSaveMeal = (meal: MealDetailsType) => {
     const key = 'mealdb:favorites'
     const stored = localStorage.getItem(key)
@@ -180,7 +197,7 @@ export default function Home() {
 
   return (
     <div className="grain">
-      <Header />
+      <Header onNavigate={handleNav} />
 
       <main className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 px-6 py-12">
         {toast ? (
@@ -205,7 +222,7 @@ export default function Home() {
               Search meals, explore categories, and unlock detailed recipe cards
               designed for clarity, speed, and flavor.
             </p>
-            <div id="search">
+            <div ref={searchRef} id="search">
               <SearchBar
                 value={query}
                 onChange={setQuery}
