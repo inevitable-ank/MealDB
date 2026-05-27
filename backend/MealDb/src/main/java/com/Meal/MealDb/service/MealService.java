@@ -7,6 +7,7 @@ import com.Meal.MealDb.dto.CategoryDto;
 import com.Meal.MealDb.dto.IngredientDto;
 import com.Meal.MealDb.dto.MealDetailsDto;
 import com.Meal.MealDb.dto.MealSummaryDto;
+import com.Meal.MealDb.dto.StatsDto;
 import com.Meal.MealDb.exception.ApiException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,28 @@ public class MealService {
     @Cacheable(cacheNames = "randomMeal")
     public MealDetailsDto randomMeal() {
         return toDetails(client.randomMeal());
+    }
+
+    @Cacheable(cacheNames = "stats", key = "#query")
+    public StatsDto stats(String query) {
+        String safeQuery = query == null ? "" : query.trim();
+        List<TheMealDbMeal> meals = client.searchByName(safeQuery);
+        int totalMeals = meals.size();
+        int categoryCount = client.categories().size();
+
+        int sampleSize = Math.min(totalMeals, 6);
+        int ingredientTotal = 0;
+        for (int i = 0; i < sampleSize; i++) {
+            ingredientTotal += buildIngredients(meals.get(i)).size();
+        }
+
+        int averageIngredients = sampleSize == 0 ? 0 : Math.round((float) ingredientTotal / sampleSize);
+
+        return new StatsDto(
+                safeQuery.isEmpty() ? "all" : safeQuery,
+                totalMeals,
+                categoryCount,
+                averageIngredients);
     }
 
     private MealSummaryDto toSummary(TheMealDbMeal meal) {

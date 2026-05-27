@@ -33,3 +33,10 @@ export type Category = {
   description: string
   thumbnail: string
 }
+
+export type Stats = {
+  query: string
+  totalMeals: number
+  categoryCount: number
+  averageIngredients: number
+}

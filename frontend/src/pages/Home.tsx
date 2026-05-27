@@ -7,12 +7,18 @@ import MealDetails from '../features/meals/MealDetails'
 import MealCard from '../features/meals/MealCard'
 import RandomHighlight from '../features/random/RandomHighlight'
 import SearchBar from '../features/search/SearchBar'
-import type { Category, MealDetails as MealDetailsType, MealSummary } from '../types/mealdb'
+import type {
+  Category,
+  MealDetails as MealDetailsType,
+  MealSummary,
+  Stats,
+} from '../types/mealdb'
 import {
   getCategories,
   getMealById,
   getRandomMeal,
   getMealsByCategory,
+  getStats,
   searchMeals,
 } from '../services/api/mealdb'
 
@@ -22,6 +28,7 @@ export default function Home() {
   const [meals, setMeals] = useState<MealSummary[]>([])
   const [randomMeal, setRandomMeal] = useState<MealDetailsType | null>(null)
   const [selectedMeal, setSelectedMeal] = useState<MealDetailsType | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
   const [isSearching, setIsSearching] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -48,8 +55,12 @@ export default function Home() {
       }
       setError(null)
       try {
-        const data = await searchMeals(term)
+        const [data, statsData] = await Promise.all([
+          searchMeals(term),
+          getStats(term),
+        ])
         setMeals(data)
+        setStats(statsData)
         if (data.length > 0) {
           const details = await getMealById(data[0].id)
           setSelectedMeal(details)
@@ -69,14 +80,16 @@ export default function Home() {
   useEffect(() => {
     const loadInitial = async () => {
       try {
-        const [categoryData, randomData, searchData] = await Promise.all([
+        const [categoryData, randomData, searchData, statsData] = await Promise.all([
           getCategories(),
           getRandomMeal(),
           searchMeals('chicken'),
+          getStats('chicken'),
         ])
         setCategories(categoryData)
         setRandomMeal(randomData)
         setMeals(searchData)
+        setStats(statsData)
         if (searchData.length > 0) {
           const details = await getMealById(searchData[0].id)
           setSelectedMeal(details)
@@ -239,9 +252,18 @@ export default function Home() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {[
-                { label: '2.8k', text: 'Recipes curated' },
-                { label: '120+', text: 'Global cuisines' },
-                { label: '15 min', text: 'Avg prep time' },
+                {
+                  label: stats ? `${stats.totalMeals}` : '—',
+                  text: `Results for ${stats?.query ?? 'search'}`,
+                },
+                {
+                  label: stats ? `${stats.categoryCount}` : '—',
+                  text: 'Meal categories',
+                },
+                {
+                  label: stats ? `${stats.averageIngredients}` : '—',
+                  text: 'Avg ingredients',
+                },
               ].map((stat) => (
                 <div
                   key={stat.text}

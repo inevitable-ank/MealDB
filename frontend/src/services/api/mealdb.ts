@@ -1,4 +1,4 @@
-import type { Category, MealDetails, MealSummary } from '../../types/mealdb'
+import type { Category, MealDetails, MealSummary, Stats } from '../../types/mealdb'
 import { request } from './client'
 
 export function searchMeals(name: string): Promise<MealSummary[]> {
@@ -19,4 +19,9 @@ export function getMealById(id: string): Promise<MealDetails> {
 
 export function getRandomMeal(): Promise<MealDetails> {
   return request('/random')
+}
+
+export function getStats(query?: string): Promise<Stats> {
+  const queryParam = query ? `?query=${encodeURIComponent(query)}` : ''
+  return request(`/stats${queryParam}`)
 }

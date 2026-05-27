@@ -3,6 +3,7 @@ package com.Meal.MealDb.controller;
 import com.Meal.MealDb.dto.CategoryDto;
 import com.Meal.MealDb.dto.MealDetailsDto;
 import com.Meal.MealDb.dto.MealSummaryDto;
+import com.Meal.MealDb.dto.StatsDto;
 import com.Meal.MealDb.service.MealService;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -47,5 +48,10 @@ public class MealController {
     @GetMapping("/random")
     public MealDetailsDto random() {
         return mealService.randomMeal();
+    }
+
+    @GetMapping("/stats")
+    public StatsDto stats(@RequestParam(value = "query", required = false) String query) {
+        return mealService.stats(query);
     }
 }
