@@ -60,7 +60,6 @@ public class MealService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Meal not found"));
     }
 
-    @Cacheable(cacheNames = "randomMeal")
     public MealDetailsDto randomMeal() {
         return toDetails(client.randomMeal());
     }

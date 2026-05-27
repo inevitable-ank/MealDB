@@ -109,18 +109,10 @@ export default function Home() {
     }
   }, [])
 
-  useEffect(() => {
-    if (!selectedMeal && randomMeal) {
-      setSelectedMeal(randomMeal)
-    }
-  }, [randomMeal, selectedMeal])
-
   const handleShuffle = async () => {
     try {
       const data = await getRandomMeal()
       setRandomMeal(data)
-      setSelectedMeal(data)
-      detailsRef.current?.scrollIntoView({ behavior: 'smooth' })
     } catch {
       setError('Unable to load a random meal right now.')
     }
@@ -372,6 +364,21 @@ export default function Home() {
           <CategoryGrid categories={categories} onSelect={handleCategorySelect} />
         </section>
 
+        <section className="space-y-6">
+          <SectionHeading title="Pick something surprising" subtitle="Random meal" />
+          {highlightMeal ? (
+            <RandomHighlight
+              meal={highlightMeal}
+              onShuffle={handleShuffle}
+              onSave={handleSaveMeal}
+            />
+          ) : (
+            <div className="rounded-3xl border border-white/80 bg-white/80 p-6 text-sm text-slate-500">
+              Loading a random meal...
+            </div>
+          )}
+        </section>
+
         <section id="recipes" ref={recipesRef} className="space-y-8">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
             <SectionHeading
@@ -391,21 +398,6 @@ export default function Home() {
               {meals.map((meal) => (
                 <MealCard key={meal.id} meal={meal} onSelect={handleSelectMeal} />
               ))}
-            </div>
-          )}
-        </section>
-
-        <section className="space-y-6">
-          <SectionHeading title="Pick something surprising" subtitle="Random meal" />
-          {highlightMeal ? (
-            <RandomHighlight
-              meal={highlightMeal}
-              onShuffle={handleShuffle}
-              onSave={handleSaveMeal}
-            />
-          ) : (
-            <div className="rounded-3xl border border-white/80 bg-white/80 p-6 text-sm text-slate-500">
-              Loading a random meal...
             </div>
           )}
         </section>
