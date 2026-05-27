@@ -5,6 +5,7 @@ type SearchBarProps = {
   value: string
   onChange: (value: string) => void
   onSearch: () => void
+  onAdvanced?: () => void
   isLoading?: boolean
 }
 
@@ -12,6 +13,7 @@ export default function SearchBar({
   value,
   onChange,
   onSearch,
+  onAdvanced,
   isLoading,
 }: SearchBarProps) {
   return (
@@ -35,7 +37,7 @@ export default function SearchBar({
         <Button type="submit" disabled={isLoading}>
           {isLoading ? 'Searching...' : 'Search recipes'}
         </Button>
-        <Button type="button" variant="ghost">
+        <Button type="button" variant="ghost" onClick={onAdvanced}>
           Advanced filters
         </Button>
       </div>

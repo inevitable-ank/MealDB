@@ -1,6 +1,10 @@
 import Button from '../ui/Button'
 
-export default function Header() {
+type HeaderProps = {
+  onSignIn?: () => void
+}
+
+export default function Header({ onSignIn }: HeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-white/70 bg-white/70 backdrop-blur">
       <div className="mx-auto flex w-full max-w-screen-xl items-center justify-between px-6 py-4">
@@ -27,7 +31,7 @@ export default function Header() {
             Details
           </a>
         </nav>
-        <Button variant="ghost">Sign in</Button>
+        <Button variant="ghost" onClick={onSignIn}>Sign in</Button>
       </div>
     </header>
   )

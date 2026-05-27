@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Footer from '../components/layout/Footer'
 import Header from '../components/layout/Header'
 import SectionHeading from '../components/ui/SectionHeading'
@@ -12,6 +12,7 @@ import {
   getCategories,
   getMealById,
   getRandomMeal,
+  getMealsByCategory,
   searchMeals,
 } from '../services/api/mealdb'
 
@@ -24,6 +25,11 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const categoriesRef = useRef<HTMLElement | null>(null)
+  const recipesRef = useRef<HTMLElement | null>(null)
+  const detailsRef = useRef<HTMLElement | null>(null)
+  const footerRef = useRef<HTMLDivElement | null>(null)
 
   const loadRandomMeal = useCallback(async () => {
     try {
@@ -48,6 +54,7 @@ export default function Home() {
           const details = await getMealById(data[0].id)
           setSelectedMeal(details)
         }
+        recipesRef.current?.scrollIntoView({ behavior: 'smooth' })
       } catch (err) {
         setError('Unable to load recipes right now. Please try again.')
       } finally {
@@ -90,15 +97,68 @@ export default function Home() {
   }, [randomMeal, selectedMeal])
 
   const handleShuffle = async () => {
-    await loadRandomMeal()
+    try {
+      const data = await getRandomMeal()
+      setRandomMeal(data)
+      setSelectedMeal(data)
+      detailsRef.current?.scrollIntoView({ behavior: 'smooth' })
+    } catch {
+      setError('Unable to load a random meal right now.')
+    }
   }
 
   const handleSelectMeal = async (id: string) => {
     try {
       const details = await getMealById(id)
       setSelectedMeal(details)
+      detailsRef.current?.scrollIntoView({ behavior: 'smooth' })
     } catch {
       setError('Unable to load meal details right now.')
+    }
+  }
+
+  const handleCategorySelect = async (category: Category) => {
+    try {
+      const data = await getMealsByCategory(category.name)
+      setMeals(data)
+      setQuery(category.name)
+      recipesRef.current?.scrollIntoView({ behavior: 'smooth' })
+      if (data.length > 0) {
+        const details = await getMealById(data[0].id)
+        setSelectedMeal(details)
+      }
+      showToast(`Showing ${category.name} recipes`)
+    } catch {
+      setError('Unable to load category meals right now.')
+    }
+  }
+
+  const handleAdvancedFilters = () => {
+    categoriesRef.current?.scrollIntoView({ behavior: 'smooth' })
+    showToast('Pick a category to filter results')
+  }
+
+  const handleSignIn = () => {
+    footerRef.current?.scrollIntoView({ behavior: 'smooth' })
+    showToast('Sign-in is coming soon')
+  }
+
+  const showToast = (message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(null), 2200)
+  }
+
+  const handleSaveMeal = (meal: MealDetailsType) => {
+    const key = 'mealdb:favorites'
+    const stored = localStorage.getItem(key)
+    const favorites = stored ? (JSON.parse(stored) as MealDetailsType[]) : []
+    const exists = favorites.some((item) => item.id === meal.id)
+    if (!exists) {
+      favorites.push(meal)
+      localStorage.setItem(key, JSON.stringify(favorites))
+      showToast('Saved to favorites')
+    } else {
+      showToast('Already in favorites')
     }
   }
 
@@ -108,9 +168,14 @@ export default function Home() {
 
   return (
     <div className="grain">
-      <Header />
+      <Header onSignIn={handleSignIn} />
 
       <main className="mx-auto flex w-full max-w-screen-xl flex-col gap-16 px-6 py-12">
+        {toast ? (
+          <div className="rounded-3xl border border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+            {toast}
+          </div>
+        ) : null}
         <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
@@ -133,6 +198,7 @@ export default function Home() {
                 value={query}
                 onChange={setQuery}
                 onSearch={() => loadSearch(true)}
+                onAdvanced={handleAdvancedFilters}
                 isLoading={isSearching}
               />
             </div>
@@ -196,15 +262,15 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="categories" className="space-y-8">
+        <section id="categories" ref={categoriesRef} className="space-y-8">
           <SectionHeading
             title="Browse by mood, cuisine, or craving"
             subtitle="Categories"
           />
-          <CategoryGrid categories={categories} />
+          <CategoryGrid categories={categories} onSelect={handleCategorySelect} />
         </section>
 
-        <section id="recipes" className="space-y-8">
+        <section id="recipes" ref={recipesRef} className="space-y-8">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
             <SectionHeading
               title="Recipes tailored to your search"
@@ -230,7 +296,11 @@ export default function Home() {
         <section className="space-y-6">
           <SectionHeading title="Pick something surprising" subtitle="Random meal" />
           {highlightMeal ? (
-            <RandomHighlight meal={highlightMeal} onShuffle={handleShuffle} />
+            <RandomHighlight
+              meal={highlightMeal}
+              onShuffle={handleShuffle}
+              onSave={handleSaveMeal}
+            />
           ) : (
             <div className="rounded-3xl border border-white/80 bg-white/80 p-6 text-sm text-slate-500">
               Loading a random meal...
@@ -238,7 +308,7 @@ export default function Home() {
           )}
         </section>
 
-        <section id="details" className="space-y-6">
+        <section id="details" ref={detailsRef} className="space-y-6">
           <SectionHeading title="Detailed recipe preview" subtitle="Recipe details" />
           {selectedMeal ? (
             <MealDetails meal={selectedMeal} />
@@ -250,7 +320,9 @@ export default function Home() {
         </section>
       </main>
 
-      <Footer />
+      <div ref={footerRef}>
+        <Footer />
+      </div>
     </div>
   )
 }

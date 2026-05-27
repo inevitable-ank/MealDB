@@ -4,9 +4,10 @@ import type { MealDetails } from '../../types/mealdb'
 type RandomHighlightProps = {
   meal: MealDetails
   onShuffle: () => void
+  onSave?: (meal: MealDetails) => void
 }
 
-export default function RandomHighlight({ meal, onShuffle }: RandomHighlightProps) {
+export default function RandomHighlight({ meal, onShuffle, onSave }: RandomHighlightProps) {
   return (
     <section className="grid gap-6 rounded-3xl border border-white/80 bg-white/80 p-6 shadow-[0_30px_60px_-36px_rgba(15,23,42,0.6)] lg:grid-cols-[1.1fr_0.9fr]">
       <div className="flex flex-col gap-4">
@@ -28,7 +29,9 @@ export default function RandomHighlight({ meal, onShuffle }: RandomHighlightProp
         )}
         <div className="flex flex-wrap gap-3">
           <Button onClick={onShuffle}>I am feeling hungry</Button>
-          <Button variant="ghost">Save recipe</Button>
+          <Button variant="ghost" onClick={() => onSave?.(meal)}>
+            Save recipe
+          </Button>
         </div>
       </div>
       <div className="relative overflow-hidden rounded-3xl">

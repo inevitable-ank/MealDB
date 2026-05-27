@@ -2,6 +2,7 @@ import type { Category } from '../../types/mealdb'
 
 type CategoryGridProps = {
   categories: Category[]
+  onSelect?: (category: Category) => void
 }
 
 const colorClasses = [
@@ -13,7 +14,7 @@ const colorClasses = [
   'bg-purple-100 text-purple-900',
 ]
 
-export default function CategoryGrid({ categories }: CategoryGridProps) {
+export default function CategoryGrid({ categories, onSelect }: CategoryGridProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {categories.map((category, index) => (
@@ -35,7 +36,10 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
             </span>
           </div>
           <p className="text-sm text-slate-600">{category.description}</p>
-          <button className="text-left text-sm font-semibold text-amber-700 transition hover:text-amber-600">
+          <button
+            className="text-left text-sm font-semibold text-amber-700 transition hover:text-amber-600"
+            onClick={() => onSelect?.(category)}
+          >
             Explore category
           </button>
         </article>
